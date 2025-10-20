@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f3f4f6;
+      padding: 20px;
+    }
+
+    .header {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      color: #111827;
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tab-button {
+      padding: 12px 24px;
+      background: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      color: #6b7280;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .tab-button:hover {
+      background: #f9fafb;
+    }
+
+    .tab-button.active {
+      background: #667eea;
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      text-align: left;
+      padding: 12px;
+      background: #f9fafb;
+      color: #374151;
+      font-weight: 600;
+      font-size: 14px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      color: #111827;
+      font-size: 14px;
+    }
+
+    tr:hover {
+      background: #f9fafb;
+    }
+
+    .color-chip {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      border: 1px solid #e5e7eb;
+      display: inline-block;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .badge-active {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .badge-inactive {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      color: #374151;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 14px;
+      min-height: 44px;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 30px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .message-success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #6ee7b7;
+    }
+
+    .message-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+
+    @media (max-width: 768px) {
+      .tabs {
+        flex-direction: column;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      td, th {
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎨 Admin Panel</h1>
+    <p>Manage colors and parts for your print farm</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-button active" onclick="switchTab('colors')">Colors (<%= colors.length %>)</button>
+    <button class="tab-button" onclick="switchTab('parts')">Parts (<%= parts.length %>)</button>
+  </div>
+
+  <div id="message-container"></div>
+
+  <!-- COLORS TAB -->
+  <div id="colors-tab" class="tab-content active">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Color Management</h2>
+        <button class="btn btn-primary" onclick="openColorModal()">+ Add Color</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Color</th>
+            <th>Name</th>
+            <th>Material</th>
+            <th>Supplier</th>
+            <th>Category</th>
+            <th>Cost/g</th>
+            <th>Stock (g)</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% colors.forEach(color => { %>
+            <tr>
+              <td>
+                <span class="color-chip" style="background-color: <%= color.hex_code %>"></span>
+              </td>
+              <td><strong><%= color.color_name %></strong></td>
+              <td><%= color.material_type || '-' %></td>
+              <td><%= color.supplier || '-' %></td>
+              <td><%= color.category || '-' %></td>
+              <td>$<%= (color.cost_per_gram || 0).toFixed(3) %></td>
+              <td><%= color.stock_grams || 0 %></td>
+              <td>
+                <span class="badge <%= color.is_active ? 'badge-active' : 'badge-inactive' %>">
+                  <%= color.is_active ? 'Active' : 'Inactive' %>
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-primary" onclick='editColor(<%= JSON.stringify(color) %>)'>Edit</button>
+                  <% if (color.is_active) { %>
+                    <button class="btn btn-danger" onclick="deactivateColor(<%= color.color_id %>)">Deactivate</button>
+                  <% } else { %>
+                    <button class="btn btn-success" onclick="activateColor(<%= color.color_id %>)">Activate</button>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PARTS TAB -->
+  <div id="parts-tab" class="tab-content">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Part Management</h2>
+        <button class="btn btn-primary" onclick="openPartModal()">+ Add Part</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Part Code</th>
+            <th>Part Name</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% parts.forEach(part => { %>
+            <tr>
+              <td><strong><%= part.part_code %></strong></td>
+              <td><%= part.part_name %></td>
+              <td><%= part.description || '-' %></td>
+              <td>
+                <span class="badge <%= part.is_active ? 'badge-active' : 'badge-inactive' %>">
+                  <%= part.is_active ? 'Active' : 'Inactive' %>
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-primary" onclick='editPart(<%= JSON.stringify(part) %>)'>Edit</button>
+                  <% if (part.is_active) { %>
+                    <button class="btn btn-danger" onclick="deactivatePart(<%= part.part_id %>)">Deactivate</button>
+                  <% } else { %>
+                    <button class="btn btn-success" onclick="activatePart(<%= part.part_id %>)">Activate</button>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- COLOR MODAL -->
+  <div id="color-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="color-modal-title">Add Color</h3>
+        <button class="close-btn" onclick="closeColorModal()">&times;</button>
+      </div>
+
+      <form id="color-form" onsubmit="handleColorSubmit(event)">
+        <input type="hidden" id="color-id" name="color_id">
+
+        <div class="form-group">
+          <label class="form-label" for="color-name">Color Name *</label>
+          <input type="text" id="color-name" name="color_name" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="hex-code">Hex Code *</label>
+          <input type="color" id="hex-code" name="hex_code" class="form-input" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="pantone-code">Pantone Code</label>
+          <input type="text" id="pantone-code" name="pantone_code" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="material-type">Material Type</label>
+          <select id="material-type" name="material_type" class="form-input">
+            <option value="">Select material...</option>
+            <option value="PLA">PLA</option>
+            <option value="PETG">PETG</option>
+            <option value="ABS">ABS</option>
+            <option value="TPU">TPU</option>
+            <option value="Nylon">Nylon</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="supplier">Supplier</label>
+          <input type="text" id="supplier" name="supplier" class="form-input" placeholder="e.g., Bambu Lab">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="category">Category</label>
+          <input type="text" id="category" name="category" class="form-input" placeholder="e.g., Basic, Matte, Silk">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cost-per-gram">Cost Per Gram ($)</label>
+          <input type="number" id="cost-per-gram" name="cost_per_gram" class="form-input" step="0.001" min="0" value="0">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="stock-grams">Stock (grams)</label>
+          <input type="number" id="stock-grams" name="stock_grams" class="form-input" step="0.01" min="0" value="0">
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeColorModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Color</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PART MODAL -->
+  <div id="part-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="part-modal-title">Add Part</h3>
+        <button class="close-btn" onclick="closePartModal()">&times;</button>
+      </div>
+
+      <form id="part-form" onsubmit="handlePartSubmit(event)">
+        <input type="hidden" id="part-id" name="part_id">
+
+        <div class="form-group">
+          <label class="form-label" for="part-code">Part Code *</label>
+          <input type="text" id="part-code" name="part_code" class="form-input" required placeholder="e.g., WM16001">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="part-name">Part Name *</label>
+          <input type="text" id="part-name" name="part_name" class="form-input" required placeholder="e.g., 16mm Wound Marker">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="description">Description</label>
+          <textarea id="description" name="description" class="form-input" rows="3" placeholder="Optional description"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closePartModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Part</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      event.target.classList.add('active');
+      document.getElementById(tab + '-tab').classList.add('active');
+    }
+
+    // Message display
+    function showMessage(message, type = 'success') {
+      const container = document.getElementById('message-container');
+      const div = document.createElement('div');
+      div.className = `message message-${type}`;
+      div.textContent = message;
+      container.appendChild(div);
+
+      setTimeout(() => div.remove(), 5000);
+    }
+
+    // COLOR FUNCTIONS
+    function openColorModal(color = null) {
+      const modal = document.getElementById('color-modal');
+      const form = document.getElementById('color-form');
+      const title = document.getElementById('color-modal-title');
+
+      form.reset();
+
+      if (color) {
+        title.textContent = 'Edit Color';
+        document.getElementById('color-id').value = color.color_id;
+        document.getElementById('color-name').value = color.color_name;
+        document.getElementById('hex-code').value = color.hex_code;
+        document.getElementById('pantone-code').value = color.pantone_code || '';
+        document.getElementById('material-type').value = color.material_type || '';
+        document.getElementById('supplier').value = color.supplier || '';
+        document.getElementById('category').value = color.category || '';
+        document.getElementById('cost-per-gram').value = color.cost_per_gram || 0;
+        document.getElementById('stock-grams').value = color.stock_grams || 0;
+      } else {
+        title.textContent = 'Add Color';
+      }
+
+      modal.classList.add('active');
+    }
+
+    function closeColorModal() {
+      document.getElementById('color-modal').classList.remove('active');
+    }
+
+    function editColor(color) {
+      openColorModal(color);
+    }
+
+    async function handleColorSubmit(event) {
+      event.preventDefault();
+
+      const form = event.target;
+      const formData = new FormData(form);
+      const colorId = formData.get('color_id');
+
+      const data = {
+        color_name: formData.get('color_name'),
+        hex_code: formData.get('hex_code'),
+        pantone_code: formData.get('pantone_code'),
+        material_type: formData.get('material_type'),
+        supplier: formData.get('supplier'),
+        category: formData.get('category'),
+        cost_per_gram: parseFloat(formData.get('cost_per_gram')) || 0,
+        stock_grams: parseFloat(formData.get('stock_grams')) || 0
+      };
+
+      try {
+        const url = colorId ? `/admin/api/colors/${colorId}` : '/admin/api/colors';
+        const method = colorId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showMessage(result.message || 'Color saved successfully!');
+          closeColorModal();
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showMessage(result.error || 'Failed to save color', 'error');
+        }
+      } catch (error) {
+        showMessage('Network error: ' + error.message, 'error');
+      }
+    }
+
+    async function deactivateColor(colorId) {
+      if (!confirm('Are you sure you want to deactivate this color?')) return;
+
+      try {
+        const response = await fetch(`/admin/api/colors/${colorId}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showMessage(result.message || 'Color deactivated successfully!');
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showMessage(result.error || 'Failed to deactivate color', 'error');
+        }
+      } catch (error) {
+        showMessage('Network error: ' + error.message, 'error');
+      }
+    }
+
+    async function activateColor(colorId) {
+      try {
+        const response = await fetch(`/admin/api/colors/${colorId}/activate`, {
+          method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showMessage(result.message || 'Color activated successfully!');
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showMessage(result.error || 'Failed to activate color', 'error');
+        }
+      } catch (error) {
+        showMessage('Network error: ' + error.message, 'error');
+      }
+    }
+
+    // PART FUNCTIONS
+    function openPartModal(part = null) {
+      const modal = document.getElementById('part-modal');
+      const form = document.getElementById('part-form');
+      const title = document.getElementById('part-modal-title');
+
+      form.reset();
+
+      if (part) {
+        title.textContent = 'Edit Part';
+        document.getElementById('part-id').value = part.part_id;
+        document.getElementById('part-code').value = part.part_code;
+        document.getElementById('part-name').value = part.part_name;
+        document.getElementById('description').value = part.description || '';
+      } else {
+        title.textContent = 'Add Part';
+      }
+
+      modal.classList.add('active');
+    }
+
+    function closePartModal() {
+      document.getElementById('part-modal').classList.remove('active');
+    }
+
+    function editPart(part) {
+      openPartModal(part);
+    }
+
+    async function handlePartSubmit(event) {
+      event.preventDefault();
+
+      const form = event.target;
+      const formData = new FormData(form);
+      const partId = formData.get('part_id');
+
+      const data = {
+        part_code: formData.get('part_code'),
+        part_name: formData.get('part_name'),
+        description: formData.get('description')
+      };
+
+      try {
+        const url = partId ? `/admin/api/parts/${partId}` : '/admin/api/parts';
+        const method = partId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showMessage(result.message || 'Part saved successfully!');
+          closePartModal();
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showMessage(result.error || 'Failed to save part', 'error');
+        }
+      } catch (error) {
+        showMessage('Network error: ' + error.message, 'error');
+      }
+    }
+
+    async function deactivatePart(partId) {
+      if (!confirm('Are you sure you want to deactivate this part?')) return;
+
+      try {
+        const response = await fetch(`/admin/api/parts/${partId}`, {
+          method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showMessage(result.message || 'Part deactivated successfully!');
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showMessage(result.error || 'Failed to deactivate part', 'error');
+        }
+      } catch (error) {
+        showMessage('Network error: ' + error.message, 'error');
+      }
+    }
+
+    async function activatePart(partId) {
+      try {
+        const response = await fetch(`/admin/api/parts/${partId}/activate`, {
+          method: 'POST'
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          showMessage(result.message || 'Part activated successfully!');
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showMessage(result.error || 'Failed to activate part', 'error');
+        }
+      } catch (error) {
+        showMessage('Network error: ' + error.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

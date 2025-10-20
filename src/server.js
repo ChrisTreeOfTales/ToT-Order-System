@@ -19,6 +19,18 @@ const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
+// Register view engine for EJS templates
+fastify.register(require('@fastify/view'), {
+  engine: {
+    ejs: require('ejs')
+  },
+  root: path.join(__dirname, 'views'),
+  layout: false
+});
+
+// Register admin routes
+fastify.register(require('./routes/admin'));
+
 /**
  * Health check endpoint
  * Used by Fly.io to verify the app is running
@@ -208,8 +220,9 @@ fastify.get('/', async (request, reply) => {
         ` : ''}
 
         <div class="footer">
-          <p>Full system implementation coming soon...</p>
+          <p>Ready to start managing your print farm!</p>
           <p style="margin-top: 10px;">
+            <a href="/admin">Admin Panel</a> ·
             <a href="/health">Health Check</a> ·
             <a href="https://github.com/anthropics/claude-code" target="_blank">Built with Claude Code</a>
           </p>

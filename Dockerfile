@@ -39,5 +39,5 @@ ENV HOST=0.0.0.0
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application (will seed data if needed, then start server)
+CMD ["npm", "run", "start:prod"]

@@ -16,6 +16,9 @@ const DB_PATH = process.env.NODE_ENV === 'production'
   ? '/data/printfarm.db'
   : path.join(__dirname, '../../printfarm.db');
 
+// Schema path
+const SCHEMA_PATH = path.join(__dirname, 'schema.sql');
+
 console.log('╔════════════════════════════════════════════════════════════╗');
 console.log('║  ToT Print Farm - Seed Production Data                   ║');
 console.log('╚════════════════════════════════════════════════════════════╝\n');
@@ -88,6 +91,19 @@ try {
   const db = new Database(DB_PATH);
   db.pragma('foreign_keys = ON');
   console.log('✓ Database opened\n');
+
+  // Initialize schema if needed
+  console.log('Checking database schema...');
+  const tableCheck = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='colors'").get();
+
+  if (!tableCheck) {
+    console.log('Database schema not found, initializing...\n');
+    const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');
+    db.exec(schema);
+    console.log('✓ Database schema initialized\n');
+  } else {
+    console.log('✓ Database schema already exists\n');
+  }
 
   // Check if data already exists
   const colorCount = db.prepare('SELECT COUNT(*) as count FROM colors').get().count;

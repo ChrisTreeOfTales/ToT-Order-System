@@ -25,14 +25,20 @@ Testing environment exists to catch these issues **before** they affect the busi
    ↓
 2. Test Locally (http://localhost:3000)
    ↓
-3. Deploy to TESTING (tot-printfarm-test)
+3. WAIT for user prompt to deploy to TEST
    ↓
-4. Verify in TESTING thoroughly
+4. Deploy to TESTING (tot-printfarm-test)
    ↓
-5. Only if TESTING works perfectly → Deploy to PRODUCTION
+5. Verify in TESTING thoroughly
+   ↓
+6. WAIT for user prompt to deploy to PROD
+   ↓
+7. Deploy to PRODUCTION (tot-printfarm-prod)
+   ↓
+8. Verify in PRODUCTION
 ```
 
-**Never skip steps. Never go directly to production.**
+**Never skip steps. Never go directly to production. Never auto-deploy without user prompt.**
 
 ---
 
@@ -249,61 +255,88 @@ flyctl releases rollback <release-number> --app tot-printfarm-prod
 
 **MANDATORY RULES:**
 
-1. **NEVER deploy to production first**
+1. **DEFAULT: Build and test locally**
+   - Make changes locally first
+   - Test locally with `npm start` or `npm run dev`
+   - Do NOT automatically deploy anywhere
+
+2. **ONLY deploy to TEST when user explicitly says:**
+   - "push to test"
+   - "deploy to test"
+   - "deploy to testing"
+   - Or similar explicit TEST deployment instruction
+
+3. **ONLY deploy to PROD when user explicitly says:**
+   - "push to prod"
+   - "deploy to prod"
+   - "deploy to production"
+   - Or similar explicit PROD deployment instruction
+
+4. **NEVER auto-deploy after changes**
+   - Do NOT deploy to TEST automatically after making changes
+   - Do NOT deploy to PROD automatically after TEST succeeds
+   - ALWAYS wait for explicit user instruction
+
+5. **NEVER deploy to production first**
    - Always deploy to testing before production
    - Always verify testing works before proceeding to production
 
-2. **NEVER deploy both environments simultaneously**
+6. **NEVER deploy both environments simultaneously**
    - Deploy testing first
    - Wait for verification
-   - Only then deploy production
+   - Only then deploy production (when prompted)
 
-3. **ALWAYS use the correct config file**
+7. **ALWAYS use the correct config file**
    - Testing: `--config fly.test.toml --app tot-printfarm-test`
    - Production: `--config fly.toml --app tot-printfarm-prod`
 
-4. **ALWAYS verify deployments**
+8. **ALWAYS verify deployments**
    - Check health endpoint
    - Review logs
    - Confirm expected environment variable (testing vs production)
 
-5. **ALWAYS follow the plan**
+9. **ALWAYS follow the plan**
    - Refer to PLAN.md for architectural decisions
    - Don't deviate from the planned structure
    - Dual environments are non-negotiable
 
-6. **WHEN making changes:**
-   ```
-   a. Make changes locally
-   b. Test locally (npm start)
-   c. Deploy to testing
-   d. Verify testing thoroughly
-   e. Only if testing works: deploy to production
-   f. Verify production
-   ```
+10. **WORKFLOW when making changes:**
+    ```
+    a. Make changes locally
+    b. Test locally (npm start)
+    c. STOP and report completion to user
+    d. WAIT for user to say "push to test" or "deploy to test"
+    e. Deploy to testing (only when prompted)
+    f. Verify testing thoroughly
+    g. Report results to user
+    h. WAIT for user to say "push to prod" or "deploy to prod"
+    i. Deploy to production (only when prompted)
+    j. Verify production
+    ```
 
-7. **WHEN asked to "deploy the app":**
-   - Deploy to testing first
-   - Wait for user approval or verification
-   - Then deploy to production
-
-8. **NEVER:**
-   - Skip testing environment
-   - Deploy to production without testing first
-   - Deploy both environments in parallel
-   - Assume production is same as testing
+11. **NEVER:**
+    - Skip testing environment
+    - Deploy to production without testing first
+    - Deploy both environments in parallel
+    - Auto-deploy without explicit user instruction
+    - Assume user wants deployment after code changes
 
 ---
 
 ## Summary
 
-**Golden Rule:** Every change must flow through: Local → Testing → Production
+**Golden Rule:** Every change must flow through: Local → (user prompt) → Testing → (user prompt) → Production
 
 **Why?** Because production data is irreplaceable, and downtime costs money.
 
-**How?** By always deploying to testing first and verifying before touching production.
+**How?** By:
+1. Building and testing locally first (default behavior)
+2. Waiting for explicit user prompt to deploy to TEST
+3. Verifying testing works thoroughly
+4. Waiting for explicit user prompt to deploy to PROD
+5. Never auto-deploying without user instruction
 
 ---
 
 **Last Updated:** 2025-10-20
-**Version:** 1.0.0
+**Version:** 2.0.0 (User-controlled deployments)

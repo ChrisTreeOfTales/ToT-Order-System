@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables (secrets)
+.env
+.env.local
+.env.production
+
+# Databases (don't commit database files)
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+logs/
+*.log
+
+# Backups (too large for git)
+backups/
+
+# OS files
+.DS_Store
+Thumbs.db
+._*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/
+
+# Fly.io deployment files (generated)
+.fly/
+
+# Temporary files
+tmp/
+temp/

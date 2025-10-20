@@ -1,0 +1,51 @@
+# Node modules (will be installed in container)
+node_modules/
+npm-debug.log
+
+# Local database (production uses /data volume)
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+logs/
+*.log
+
+# Backups (too large)
+backups/
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Environment files
+.env*
+
+# Documentation and planning files
+*.md
+!README.md
+
+# Fly.io deployment files
+.fly/
+fly.toml
+
+# CI/CD files
+.github/
+
+# Test files
+test/
+tests/
+*.test.js
+*.spec.js
+
+# Temporary files
+tmp/
+temp/

@@ -5,6 +5,7 @@
 -- ============================================================================
 -- COLORS TABLE
 -- Stores all available colors for printing items
+-- Enhanced with material information from ZEUS database
 -- Never delete colors (soft delete with is_active flag)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS colors (
@@ -12,28 +13,40 @@ CREATE TABLE IF NOT EXISTS colors (
   color_name TEXT NOT NULL UNIQUE,
   hex_code TEXT NOT NULL,
   pantone_code TEXT,
+  material_type TEXT,              -- PLA, PETG, ABS, etc.
+  supplier TEXT,                   -- Bambu Lab, PolyTerra, etc.
+  category TEXT,                   -- Basic, Matte, Silk, etc.
+  cost_per_gram DECIMAL(8,4),      -- Cost per gram for inventory
+  stock_grams DECIMAL(10,2) DEFAULT 0,  -- Current stock in grams
   is_active BOOLEAN DEFAULT 1,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Index for faster lookups of active colors
 CREATE INDEX IF NOT EXISTS idx_colors_active ON colors(is_active);
+CREATE INDEX IF NOT EXISTS idx_colors_supplier ON colors(supplier);
+CREATE INDEX IF NOT EXISTS idx_colors_material ON colors(material_type);
 
 -- ============================================================================
 -- PARTS TABLE
 -- Master list of all parts that can be included in items
+-- Enhanced with part_code from ZEUS database for SKU tracking
 -- Never delete parts (soft delete with is_active flag)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS parts (
   part_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  part_code TEXT UNIQUE,           -- SKU/Part code (e.g., WM16001, TOK0025)
   part_name TEXT NOT NULL UNIQUE,
   description TEXT,
   is_active BOOLEAN DEFAULT 1,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Index for faster lookups of active parts
 CREATE INDEX IF NOT EXISTS idx_parts_active ON parts(is_active);
+CREATE INDEX IF NOT EXISTS idx_parts_code ON parts(part_code);
 
 -- ============================================================================
 -- ORDERS TABLE

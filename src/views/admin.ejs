@@ -319,12 +319,13 @@
 <body>
   <div class="header">
     <h1>🎨 Admin Panel</h1>
-    <p>Manage colors and parts for your print farm</p>
+    <p>Manage colors, parts and product templates for your print farm</p>
   </div>
 
   <div class="tabs">
     <button class="tab-button active" onclick="switchTab('colors')">Colors (<%= colors.length %>)</button>
     <button class="tab-button" onclick="switchTab('parts')">Parts (<%= parts.length %>)</button>
+    <button class="tab-button" onclick="switchTab('templates')">Product Templates (<%= templates.length %>)</button>
   </div>
 
   <div id="message-container"></div>
@@ -431,6 +432,73 @@
     </div>
   </div>
 
+  <!-- TEMPLATES TAB -->
+  <div id="templates-tab" class="tab-content">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Product Template Management</h2>
+        <button class="btn btn-primary" onclick="openTemplateModal()">+ Add Product Template</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Template Name</th>
+            <th>Description</th>
+            <th>Colors</th>
+            <th>Print Time</th>
+            <th>Print Cost</th>
+            <th>Parts</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (templates.length === 0) { %>
+            <tr>
+              <td colspan="8" style="text-align: center; color: #6b7280; padding: 40px;">
+                No product templates yet. Click "+ Add Product Template" to create one.
+              </td>
+            </tr>
+          <% } %>
+          <% templates.forEach(template => { %>
+            <tr>
+              <td><strong><%= template.template_name %></strong></td>
+              <td><%= template.description || '-' %></td>
+              <td><%= template.num_colors %> color<%= template.num_colors > 1 ? 's' : '' %></td>
+              <td><%= template.print_time_minutes %> min</td>
+              <td>$<%= template.print_cost.toFixed(2) %></td>
+              <td>
+                <% if (template.parts && template.parts.length > 0) { %>
+                  <%= template.parts.map(p => `${p.quantity}x ${p.part_name}`).join(', ') %>
+                <% } else { %>
+                  <span style="color: #6b7280;">No parts</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (template.is_active) { %>
+                  <span class="badge badge-active">Active</span>
+                <% } else { %>
+                  <span class="badge badge-inactive">Inactive</span>
+                <% } %>
+              </td>
+              <td>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-primary" onclick='editTemplate(<%= JSON.stringify(template) %>)'>Edit</button>
+                  <% if (template.is_active) { %>
+                    <button class="btn btn-danger" onclick="deactivateTemplate(<%= template.template_id %>)">Deactivate</button>
+                  <% } else { %>
+                    <button class="btn btn-success" onclick="activateTemplate(<%= template.template_id %>)">Activate</button>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- COLOR MODAL -->
   <div id="color-modal" class="modal">
     <div class="modal-content">
@@ -526,6 +594,78 @@
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" onclick="closePartModal()">Cancel</button>
           <button type="submit" class="btn btn-primary">Save Part</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TEMPLATE MODAL -->
+  <div id="template-modal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="template-modal-title">Add Product Template</h3>
+        <button class="close-btn" onclick="closeTemplateModal()">&times;</button>
+      </div>
+
+      <form id="template-form" onsubmit="handleTemplateSubmit(event)">
+        <input type="hidden" id="template-id" name="template_id">
+
+        <div class="form-group">
+          <label class="form-label" for="template-name">Template Name *</label>
+          <input type="text" id="template-name" name="template_name" class="form-input" required
+                 placeholder="e.g., 4-Color Wound Marker Set">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="template-description">Description</label>
+          <textarea id="template-description" name="description" class="form-input" rows="2"
+                    placeholder="Optional description of what this template includes"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="template-num-colors">Number of Colors * (1-4)</label>
+          <input type="number" id="template-num-colors" name="num_colors" class="form-input"
+                 min="1" max="4" required value="1">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="template-print-time">Print Time (minutes) *</label>
+          <input type="number" id="template-print-time" name="print_time_minutes" class="form-input"
+                 min="0" required value="0" placeholder="e.g., 120">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="template-print-cost">Print Cost ($) *</label>
+          <input type="number" id="template-print-cost" name="print_cost" class="form-input"
+                 min="0" step="0.01" required value="0.00" placeholder="e.g., 2.50">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Parts in this Template</label>
+          <div id="template-parts-container" style="max-height: 200px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; padding: 10px;">
+            <% parts.forEach(part => { %>
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <input type="checkbox" id="part-<%= part.part_id %>" class="part-checkbox"
+                       data-part-id="<%= part.part_id %>"
+                       data-part-name="<%= part.part_name %>"
+                       style="width: 20px; height: 20px;">
+                <label for="part-<%= part.part_id %>" style="flex: 1; margin: 0; cursor: pointer;">
+                  <strong><%= part.part_code %></strong> - <%= part.part_name %>
+                </label>
+                <input type="number" id="qty-<%= part.part_id %>" class="part-quantity"
+                       min="1" value="1" disabled
+                       style="width: 60px; padding: 4px 8px; border: 1px solid #e5e7eb; border-radius: 4px;">
+              </div>
+            <% }); %>
+          </div>
+          <p style="color: #6b7280; font-size: 12px; margin-top: 8px;">
+            Check parts to include, and set quantity for each.
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeTemplateModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Template</button>
         </div>
       </form>
     </div>
@@ -768,6 +908,180 @@
           setTimeout(() => window.location.reload(), 1000);
         } else {
           showMessage(result.error || 'Failed to activate part', 'error');
+        }
+      } catch (error) {
+        showMessage('Network error: ' + error.message, 'error');
+      }
+    }
+
+    // ============================================================================
+    // TEMPLATE MANAGEMENT FUNCTIONS
+    // ============================================================================
+
+    // Enable/disable quantity inputs based on checkbox state
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.part-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          const partId = this.dataset.partId;
+          const qtyInput = document.getElementById(`qty-${partId}`);
+          qtyInput.disabled = !this.checked;
+        });
+      });
+    });
+
+    function openTemplateModal() {
+      document.getElementById('template-modal-title').textContent = 'Add Product Template';
+      document.getElementById('template-form').reset();
+      document.getElementById('template-id').value = '';
+
+      // Reset all checkboxes and quantities
+      document.querySelectorAll('.part-checkbox').forEach(cb => {
+        cb.checked = false;
+        const qtyInput = document.getElementById(`qty-${cb.dataset.partId}`);
+        qtyInput.value = 1;
+        qtyInput.disabled = true;
+      });
+
+      document.getElementById('template-modal').style.display = 'block';
+    }
+
+    function closeTemplateModal() {
+      document.getElementById('template-modal').style.display = 'none';
+    }
+
+    function editTemplate(template) {
+      document.getElementById('template-modal-title').textContent = 'Edit Product Template';
+      document.getElementById('template-id').value = template.template_id;
+      document.getElementById('template-name').value = template.template_name;
+      document.getElementById('template-description').value = template.description || '';
+      document.getElementById('template-num-colors').value = template.num_colors;
+      document.getElementById('template-print-time').value = template.print_time_minutes;
+      document.getElementById('template-print-cost').value = template.print_cost;
+
+      // Reset all checkboxes first
+      document.querySelectorAll('.part-checkbox').forEach(cb => {
+        cb.checked = false;
+        const qtyInput = document.getElementById(`qty-${cb.dataset.partId}`);
+        qtyInput.value = 1;
+        qtyInput.disabled = true;
+      });
+
+      // Check boxes for parts in this template
+      if (template.parts && template.parts.length > 0) {
+        template.parts.forEach(part => {
+          const checkbox = document.getElementById(`part-${part.part_id}`);
+          const qtyInput = document.getElementById(`qty-${part.part_id}`);
+          if (checkbox) {
+            checkbox.checked = true;
+            qtyInput.disabled = false;
+            qtyInput.value = part.quantity;
+          }
+        });
+      }
+
+      document.getElementById('template-modal').style.display = 'block';
+    }
+
+    async function handleTemplateSubmit(event) {
+      event.preventDefault();
+
+      const formData = new FormData(event.target);
+      const templateId = formData.get('template_id');
+
+      // Collect selected parts with quantities
+      const parts = [];
+      document.querySelectorAll('.part-checkbox:checked').forEach(checkbox => {
+        const partId = checkbox.dataset.partId;
+        const quantity = document.getElementById(`qty-${partId}`).value;
+        parts.push({
+          part_id: parseInt(partId),
+          quantity: parseInt(quantity)
+        });
+      });
+
+      const templateData = {
+        template_name: formData.get('template_name'),
+        description: formData.get('description'),
+        num_colors: parseInt(formData.get('num_colors')),
+        print_time_minutes: parseInt(formData.get('print_time_minutes')),
+        print_cost: parseFloat(formData.get('print_cost')),
+        parts: parts
+      };
+
+      try {
+        let result;
+        if (templateId) {
+          // Update existing template
+          const response = await fetch(`/admin/api/templates/${templateId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(templateData)
+          });
+          result = await response.json();
+
+          if (response.ok) {
+            showMessage('Template updated successfully!');
+            closeTemplateModal();
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            showMessage(result.error || 'Failed to update template', 'error');
+          }
+        } else {
+          // Create new template
+          const response = await fetch('/admin/api/templates', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(templateData)
+          });
+          result = await response.json();
+
+          if (response.ok) {
+            showMessage('Template created successfully!');
+            closeTemplateModal();
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            showMessage(result.error || 'Failed to create template', 'error');
+          }
+        }
+      } catch (error) {
+        showMessage('Network error: ' + error.message, 'error');
+      }
+    }
+
+    async function deactivateTemplate(templateId) {
+      if (!confirm('Are you sure you want to deactivate this template?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/admin/api/templates/${templateId}`, {
+          method: 'DELETE'
+        });
+        const result = await response.json();
+
+        if (response.ok) {
+          showMessage('Template deactivated successfully!');
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showMessage(result.error || 'Failed to deactivate template', 'error');
+        }
+      } catch (error) {
+        showMessage('Network error: ' + error.message, 'error');
+      }
+    }
+
+    async function activateTemplate(templateId) {
+      try {
+        const response = await fetch(`/admin/api/templates/${templateId}/activate`, {
+          method: 'POST'
+        });
+        const result = await response.json();
+
+        if (response.ok) {
+          showMessage('Template activated successfully!');
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          showMessage(result.error || 'Failed to activate template', 'error');
         }
       } catch (error) {
         showMessage('Network error: ' + error.message, 'error');

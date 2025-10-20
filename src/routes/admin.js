@@ -5,10 +5,12 @@
  * - /admin - Main admin page
  * - /admin/colors - Color management API
  * - /admin/parts - Part management API
+ * - /admin/templates - Product Template management API
  */
 
 const Color = require('../models/Color');
 const Part = require('../models/Part');
+const ProductTemplate = require('../models/ProductTemplate');
 
 async function adminRoutes(fastify, options) {
   // ============================================================================
@@ -22,11 +24,13 @@ async function adminRoutes(fastify, options) {
   fastify.get('/admin', async (request, reply) => {
     const colors = Color.getAll();
     const parts = Part.getAll();
+    const templates = ProductTemplate.getAll();
 
     return reply.view('admin.ejs', {
       colors,
       parts,
-      title: 'Admin - Colors & Parts Management'
+      templates,
+      title: 'Admin - Colors, Parts & Templates Management'
     });
   });
 
@@ -255,6 +259,202 @@ async function adminRoutes(fastify, options) {
       return reply.code(404).send({ error: 'Part not found' });
     }
     return { message: 'Part activated successfully' };
+  });
+
+  // ============================================================================
+  // PRODUCT TEMPLATE API ENDPOINTS
+  // ============================================================================
+
+  /**
+   * GET /admin/api/templates
+   * Get all product templates (active by default, or all if includeInactive=true)
+   */
+  fastify.get('/admin/api/templates', async (request, reply) => {
+    const includeInactive = request.query.includeInactive === 'true';
+    const templates = ProductTemplate.getAll(includeInactive);
+    return { templates };
+  });
+
+  /**
+   * GET /admin/api/templates/:id
+   * Get a specific template by ID with all its parts
+   */
+  fastify.get('/admin/api/templates/:id', async (request, reply) => {
+    const template = ProductTemplate.getById(request.params.id);
+    if (!template) {
+      return reply.code(404).send({ error: 'Template not found' });
+    }
+    return { template };
+  });
+
+  /**
+   * POST /admin/api/templates
+   * Create a new product template
+   *
+   * Body parameters:
+   * - template_name (required) - Unique template name
+   * - description (optional)
+   * - num_colors (required) - Number of colors (1-4)
+   * - print_time_minutes (required) - Print time in minutes
+   * - print_cost (required) - Print cost in dollars
+   * - parts (optional) - Array of {part_id, quantity} objects
+   */
+  fastify.post('/admin/api/templates', async (request, reply) => {
+    try {
+      const templateData = request.body;
+
+      // Validation
+      if (!templateData.template_name) {
+        return reply.code(400).send({
+          error: 'template_name is required'
+        });
+      }
+
+      if (!templateData.num_colors || templateData.num_colors < 1 || templateData.num_colors > 4) {
+        return reply.code(400).send({
+          error: 'num_colors must be between 1 and 4'
+        });
+      }
+
+      const template = ProductTemplate.create(templateData);
+      return reply.code(201).send({ template, message: 'Product template created successfully' });
+    } catch (error) {
+      if (error.message.includes('UNIQUE constraint failed')) {
+        return reply.code(409).send({ error: 'Template with this name already exists' });
+      }
+      if (error.message.includes('num_colors')) {
+        return reply.code(400).send({ error: error.message });
+      }
+      throw error;
+    }
+  });
+
+  /**
+   * PUT /admin/api/templates/:id
+   * Update an existing product template (metadata only, not parts)
+   *
+   * Body parameters: Same as POST (except parts)
+   */
+  fastify.put('/admin/api/templates/:id', async (request, reply) => {
+    try {
+      const templateData = request.body;
+
+      // Validation
+      if (templateData.num_colors && (templateData.num_colors < 1 || templateData.num_colors > 4)) {
+        return reply.code(400).send({
+          error: 'num_colors must be between 1 and 4'
+        });
+      }
+
+      const success = ProductTemplate.update(request.params.id, templateData);
+      if (!success) {
+        return reply.code(404).send({ error: 'Template not found' });
+      }
+
+      const template = ProductTemplate.getById(request.params.id);
+      return { template, message: 'Template updated successfully' };
+    } catch (error) {
+      if (error.message.includes('UNIQUE constraint failed')) {
+        return reply.code(409).send({ error: 'Template with this name already exists' });
+      }
+      throw error;
+    }
+  });
+
+  /**
+   * POST /admin/api/templates/:id/parts
+   * Add a part to a template (or update quantity if already exists)
+   *
+   * Body parameters:
+   * - part_id (required)
+   * - quantity (optional, default: 1)
+   */
+  fastify.post('/admin/api/templates/:id/parts', async (request, reply) => {
+    const { part_id, quantity } = request.body;
+
+    if (!part_id) {
+      return reply.code(400).send({ error: 'part_id is required' });
+    }
+
+    const success = ProductTemplate.addPart(
+      request.params.id,
+      part_id,
+      quantity || 1
+    );
+
+    if (!success) {
+      return reply.code(404).send({ error: 'Template or part not found' });
+    }
+
+    return { message: 'Part added to template successfully' };
+  });
+
+  /**
+   * PUT /admin/api/templates/:id/parts/:partId
+   * Update the quantity of a part in a template
+   *
+   * Body parameters:
+   * - quantity (required)
+   */
+  fastify.put('/admin/api/templates/:id/parts/:partId', async (request, reply) => {
+    const { quantity } = request.body;
+
+    if (!quantity || quantity < 1) {
+      return reply.code(400).send({ error: 'quantity must be at least 1' });
+    }
+
+    const success = ProductTemplate.updatePartQuantity(
+      request.params.id,
+      request.params.partId,
+      quantity
+    );
+
+    if (!success) {
+      return reply.code(404).send({ error: 'Template or part not found' });
+    }
+
+    return { message: 'Part quantity updated successfully' };
+  });
+
+  /**
+   * DELETE /admin/api/templates/:id/parts/:partId
+   * Remove a part from a template
+   */
+  fastify.delete('/admin/api/templates/:id/parts/:partId', async (request, reply) => {
+    const success = ProductTemplate.removePart(
+      request.params.id,
+      request.params.partId
+    );
+
+    if (!success) {
+      return reply.code(404).send({ error: 'Template or part not found' });
+    }
+
+    return { message: 'Part removed from template successfully' };
+  });
+
+  /**
+   * DELETE /admin/api/templates/:id
+   * Deactivate a template (soft delete)
+   */
+  fastify.delete('/admin/api/templates/:id', async (request, reply) => {
+    const success = ProductTemplate.deactivate(request.params.id);
+    if (!success) {
+      return reply.code(404).send({ error: 'Template not found' });
+    }
+    return { message: 'Template deactivated successfully' };
+  });
+
+  /**
+   * POST /admin/api/templates/:id/activate
+   * Reactivate a deactivated template
+   */
+  fastify.post('/admin/api/templates/:id/activate', async (request, reply) => {
+    const success = ProductTemplate.activate(request.params.id);
+    if (!success) {
+      return reply.code(404).send({ error: 'Template not found' });
+    }
+    return { message: 'Template activated successfully' };
   });
 }
 

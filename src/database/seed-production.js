@@ -102,7 +102,28 @@ try {
     db.exec(schema);
     console.log('✓ Database schema initialized\n');
   } else {
-    console.log('✓ Database schema already exists\n');
+    // Check if schema is up-to-date (has the new material_type column)
+    const columnCheck = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='colors'").get();
+
+    if (!columnCheck.sql.includes('material_type')) {
+      console.log('Old schema detected, upgrading to new schema...\n');
+
+      // Drop old tables and recreate with new schema
+      console.log('Dropping old tables...');
+      db.exec('DROP TABLE IF EXISTS print_items');
+      db.exec('DROP TABLE IF EXISTS products');
+      db.exec('DROP TABLE IF EXISTS parts');
+      db.exec('DROP TABLE IF EXISTS colors');
+      db.exec('DROP TABLE IF EXISTS orders');
+      console.log('✓ Old tables dropped\n');
+
+      console.log('Creating new schema...');
+      const schema = fs.readFileSync(SCHEMA_PATH, 'utf8');
+      db.exec(schema);
+      console.log('✓ Database schema upgraded\n');
+    } else {
+      console.log('✓ Database schema is up-to-date\n');
+    }
   }
 
   // Check if data already exists

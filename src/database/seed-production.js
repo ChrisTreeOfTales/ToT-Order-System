@@ -94,13 +94,12 @@ try {
   const partCount = db.prepare('SELECT COUNT(*) as count FROM parts').get().count;
 
   if (colorCount > 0 || partCount > 0) {
-    console.log(`⚠️  Database already contains data:`);
+    console.log(`✓  Database already contains data:`);
     console.log(`   - ${colorCount} colors`);
     console.log(`   - ${partCount} parts`);
-    console.log('\nTo re-seed, you need to manually clear the database first.\n');
-    console.log('Run this SQL to clear:');
-    console.log('  DELETE FROM colors;');
-    console.log('  DELETE FROM parts;\n');
+    console.log('\nSkipping seed - data already loaded.\n');
+    db.close();
+    console.log('✓ Database closed\n');
     process.exit(0);
   }
 

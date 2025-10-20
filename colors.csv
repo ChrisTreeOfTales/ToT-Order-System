@@ -1,0 +1,25 @@
+color_name,hex_code,pantone_code
+Red,#FF0000,
+Blue,#0000FF,
+Green,#00FF00,
+Yellow,#FFFF00,
+Black,#000000,
+White,#FFFFFF,
+
+# INSTRUCTIONS:
+# Fill in your ~30 colors following the format above
+#
+# Format:
+# - color_name: The name you want to display (e.g., "Red", "Navy Blue", "Pantone 185 C")
+# - hex_code: The color in hex format starting with # (e.g., "#FF0000" for red)
+#   - Use a color picker tool like https://htmlcolorcodes.com/ if you need help
+# - pantone_code: Optional Pantone code for reference (leave blank if you don't have it)
+#
+# Examples:
+# Navy Blue,#000080,Pantone 282 C
+# Forest Green,#228B22,
+# Hot Pink,#FF69B4,Pantone 806 C
+#
+# Keep the header line: color_name,hex_code,pantone_code
+# Add one color per line
+# Delete these instruction lines when you're done

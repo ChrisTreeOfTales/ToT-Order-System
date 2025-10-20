@@ -102,14 +102,28 @@ try {
     db.exec(schema);
     console.log('✓ Database schema initialized\n');
   } else {
-    // Check if schema is up-to-date (has the new material_type column)
+    // Check if schema is up-to-date
     const columnCheck = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='colors'").get();
+    const templateCheck = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='product_templates'").get();
 
-    if (!columnCheck.sql.includes('material_type')) {
-      console.log('Old schema detected, upgrading to new schema...\n');
+    // Check for old schema (missing material_type) or missing product_templates table
+    const needsUpgrade = !columnCheck.sql.includes('material_type') || !templateCheck;
+
+    if (needsUpgrade) {
+      console.log('Schema update needed, upgrading...\n');
+
+      if (!columnCheck.sql.includes('material_type')) {
+        console.log('Detected: Old schema without material tracking');
+      }
+      if (!templateCheck) {
+        console.log('Detected: Missing product_templates table');
+      }
+      console.log('');
 
       // Drop old tables and recreate with new schema
       console.log('Dropping old tables...');
+      db.exec('DROP TABLE IF EXISTS template_parts');
+      db.exec('DROP TABLE IF EXISTS product_templates');
       db.exec('DROP TABLE IF EXISTS print_items');
       db.exec('DROP TABLE IF EXISTS products');
       db.exec('DROP TABLE IF EXISTS parts');
